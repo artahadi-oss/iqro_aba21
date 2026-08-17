@@ -1,126 +1,480 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Formulir Input Data</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f6f9;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-    }
-    .container {
-      background: #ffffff;
-      padding: 30px;
-      border-radius: 8px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 400px;
-    }
-    h2 {
-      text-align: center;
-      color: #333;
-      margin-bottom: 20px;
-    }
-    .form-group {
-      margin-bottom: 15px;
-    }
-    label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
-      color: #555;
-    }
-    input[type="text"], input[type="tel"] {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      box-sizing: border-box;
-    }
-    button {
-      width: 100%;
-      padding: 12px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #0056b3;
-    }
-    #status {
-      margin-top: 15px;
-      text-align: center;
-      font-weight: bold;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DATA Gembira - TK ABA XXI</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+    </style>
 </head>
-<body>
+<body class="bg-emerald-50/50 min-h-screen text-slate-800 pb-12">
 
-  <div class="container">
-    <h2>Formulir Pendataan</h2>
-    
-    <form id="dataForm">
-      <div class="form-group">
-        <label for="nama">Nama Lengkap:</label>
-        <input type="text" id="nama" name="nama" placeholder="Masukkan nama" required>
-      </div>
-      
-      <div class="form-group">
-        <label for="alamat">Alamat:</label>
-        <input type="text" id="alamat" name="alamat" placeholder="Masukkan alamat" required>
-      </div>
+    <!-- Header / Banner -->
+    <header class="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="w-14 h-14 bg-white/10 backdrop-blur rounded-2xl flex items-center justify-center border border-white/20 text-3xl shadow-inner">
+                        📖
+                    </div>
+                    <div>
+                        <div class="inline-block bg-emerald-500/30 text-emerald-100 text-xs font-semibold px-2.5 py-0.5 rounded-full mb-1 border border-emerald-400/30">
+                            Aplikasi Pencatatan Hafalan & Bacaan
+                        </div>
+                        <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">DATA GEMBIRA</h1>
+                        <p class="text-emerald-100 text-sm font-medium">(Gerakan Baca Iqro Bersama) TK ABA XXI</p>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <div class="bg-white/10 backdrop-blur border border-white/20 rounded-xl px-4 py-2 text-center">
+                        <span class="block text-xs text-emerald-200">Total Murid</span>
+                        <span class="text-lg font-bold">37</span>
+                    </div>
+                    <div class="bg-white/10 backdrop-blur border border-white/20 rounded-xl px-4 py-2 text-center">
+                        <span class="block text-xs text-emerald-200">Total Guru</span>
+                        <span class="text-lg font-bold">5</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
 
-      <div class="form-group">
-        <label for="hp">Nomor HP / WhatsApp:</label>
-        <input type="tel" id="hp" name="hp" placeholder="Masukkan nomor HP" required>
-      </div>
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
 
-      <button type="submit" id="btnSubmit">Kirim Data</button>
-    </form>
+        <!-- Stat Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+            <div class="bg-white rounded-2xl p-5 border border-emerald-100 shadow-sm flex items-center gap-4">
+                <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center text-xl font-bold">
+                    <i class="fa-solid fa-book-open"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Setoran</p>
+                    <h3 class="text-2xl font-bold text-slate-800" id="statTotalSetoran">0</h3>
+                </div>
+            </div>
+            <div class="bg-white rounded-2xl p-5 border border-emerald-100 shadow-sm flex items-center gap-4">
+                <div class="w-12 h-12 bg-green-100 text-green-600 rounded-xl flex items-center justify-center text-xl font-bold">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Lancar / Lulus</p>
+                    <h3 class="text-2xl font-bold text-slate-800" id="statLancar">0</h3>
+                </div>
+            </div>
+            <div class="bg-white rounded-2xl p-5 border border-emerald-100 shadow-sm flex items-center gap-4">
+                <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center text-xl font-bold">
+                    <i class="fa-solid fa-rotate-right"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Mengulang</p>
+                    <h3 class="text-2xl font-bold text-slate-800" id="statMengulang">0</h3>
+                </div>
+            </div>
+            <div class="bg-white rounded-2xl p-5 border border-emerald-100 shadow-sm flex items-center gap-4">
+                <div class="w-12 h-12 bg-teal-100 text-teal-600 rounded-xl flex items-center justify-center text-xl font-bold">
+                    <i class="fa-solid fa-calendar-day"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Setoran Hari Ini</p>
+                    <h3 class="text-2xl font-bold text-slate-800" id="statHariIni">0</h3>
+                </div>
+            </div>
+        </div>
 
-    <div id="status"></div>
-  </div>
+        <!-- Main Content Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-  <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbxAwYj0LnQCY6C4rw-IPPwayBemNN6Jml0zF3kJR-OLALxb5QhFASA2BWdidgfz_rFd/exec';
-    const form = document.forms['dataForm'];
-    const btnSubmit = document.getElementById('btnSubmit');
-    const statusDiv = document.getElementById('status');
+            <!-- Form Section -->
+            <div class="lg:col-span-5">
+                <div class="bg-white rounded-2xl border border-emerald-100 shadow-sm overflow-hidden sticky top-6">
+                    <div class="bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-4 text-white flex justify-between items-center">
+                        <h2 class="font-bold text-lg flex items-center gap-2">
+                            <i class="fa-solid fa-pen-to-square"></i> Form Input Setoran
+                        </h2>
+                        <span class="text-xs bg-white/20 px-2.5 py-1 rounded-full">TK ABA XXI</span>
+                    </div>
+                    
+                    <form id="iqroForm" class="p-6 space-y-4">
+                        <!-- Nama Anak -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Nama Anak <span class="text-rose-500">*</span></label>
+                            <div class="relative">
+                                <select id="namaAnak" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition appearance-none">
+                                    <option value="" disabled selected>-- Pilih Nama Anak --</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
+                                    <i class="fa-solid fa-chevron-down text-xs"></i>
+                                </div>
+                            </div>
+                        </div>
 
-    form.addEventListener('submit', e => {
-      e.preventDefault();
-      
-      // Mengubah status tombol saat mengirim
-      btnSubmit.disabled = true;
-      btnSubmit.innerText = 'Mengirim...';
-      statusDiv.innerText = '';
-      statusDiv.style.color = '#333';
+                        <!-- Tanggal & Hari -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Hari & Tanggal <span class="text-rose-500">*</span></label>
+                            <input type="date" id="tanggal" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition">
+                        </div>
 
-      fetch(scriptURL, { method: 'POST', body: new FormData(form)})
-        .then(response => {
-          statusDiv.innerText = '✅ Data berhasil terkirim ke Google Sheets!';
-          statusDiv.style.color = 'green';
-          form.reset(); // Mengosongkan isian form
-          btnSubmit.disabled = false;
-          btnSubmit.innerText = 'Kirim Data';
-        })
-        .catch(error => {
-          statusDiv.innerText = '❌ Gagal mengirim data. Silakan coba lagi.';
-          statusDiv.style.color = 'red';
-          btnSubmit.disabled = false;
-          btnSubmit.innerText = 'Kirim Data';
+                        <!-- Jilid & Halaman -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Jilid <span class="text-rose-500">*</span></label>
+                                <div class="relative">
+                                    <select id="jilid" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition appearance-none">
+                                        <option value="" disabled selected>-- Pilih --</option>
+                                        <option value="Jilid 1">Jilid 1</option>
+                                        <option value="Jilid 2">Jilid 2</option>
+                                        <option value="Jilid 3">Jilid 3</option>
+                                        <option value="Jilid 4">Jilid 4</option>
+                                        <option value="Jilid 5">Jilid 5</option>
+                                        <option value="Jilid 6">Jilid 6</option>
+                                        <option value="Al-Qur'an">Al-Qur'an</option>
+                                    </select>
+                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
+                                        <i class="fa-solid fa-chevron-down text-xs"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Halaman <span class="text-rose-500">*</span></label>
+                                <input type="number" id="halaman" min="1" max="60" placeholder="Contoh: 12" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition">
+                            </div>
+                        </div>
+
+                        <!-- Guru Pembimbing -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Guru / Pembimbing <span class="text-rose-500">*</span></label>
+                            <div class="relative">
+                                <select id="guru" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition appearance-none">
+                                    <option value="" disabled selected>-- Pilih Guru --</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
+                                    <i class="fa-solid fa-chevron-down text-xs"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Keterangan -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Keterangan / Status <span class="text-rose-500">*</span></label>
+                            <div class="grid grid-cols-2 gap-3">
+                                <label class="flex items-center gap-2 p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-emerald-50/50 transition">
+                                    <input type="radio" name="keterangan" value="Lancar/Lulus" checked class="text-emerald-600 focus:ring-emerald-500">
+                                    <span class="text-sm font-semibold text-emerald-800 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-circle-check text-emerald-500"></i> Lancar / Lulus
+                                    </span>
+                                </label>
+
+                                <label class="flex items-center gap-2 p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-amber-50/50 transition">
+                                    <input type="radio" name="keterangan" value="Mengulang" class="text-amber-600 focus:ring-amber-500">
+                                    <span class="text-sm font-semibold text-amber-800 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-rotate-right text-amber-500"></i> Mengulang
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="pt-2">
+                            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-md shadow-emerald-600/20 hover:shadow-lg transition flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-plus"></i> Simpan Catatan
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Table Section -->
+            <div class="lg:col-span-7">
+                <div class="bg-white rounded-2xl border border-emerald-100 shadow-sm overflow-hidden">
+                    <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row gap-4 items-center justify-between">
+                        <div>
+                            <h2 class="font-bold text-slate-800 text-lg flex items-center gap-2">
+                                <i class="fa-solid fa-list-check text-emerald-600"></i> Rekapitasi Setoran Iqro
+                            </h2>
+                            <p class="text-xs text-slate-500">Daftar riwayat bacaan siswa terkini</p>
+                        </div>
+
+                        <!-- Search Box -->
+                        <div class="w-full sm:w-auto relative">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                            <input type="text" id="searchInput" placeholder="Cari nama anak..." class="w-full sm:w-64 bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition">
+                        </div>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm text-slate-600">
+                            <thead class="bg-slate-50 text-slate-700 uppercase font-bold text-[11px] tracking-wider border-b border-slate-100">
+                                <tr>
+                                    <th class="px-4 py-3">Hari, Tanggal</th>
+                                    <th class="px-4 py-3">Nama Anak</th>
+                                    <th class="px-4 py-3">Jilid/Hal</th>
+                                    <th class="px-4 py-3">Pembimbing</th>
+                                    <th class="px-4 py-3 text-center">Status</th>
+                                    <th class="px-4 py-3 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rekapTableBody" class="divide-y divide-slate-100">
+                                <!-- Data rows injected by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div id="emptyState" class="hidden p-8 text-center">
+                        <div class="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">
+                            <i class="fa-solid fa-folder-open"></i>
+                        </div>
+                        <p class="text-sm font-semibold text-slate-600">Belum ada data setoran</p>
+                        <p class="text-xs text-slate-400 mt-1">Silakan isi form di sebelah kiri untuk menambah record baru.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Master Data Murid & Guru -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- List Murid -->
+            <div class="bg-white rounded-2xl p-6 border border-emerald-100 shadow-sm">
+                <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                    <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-children text-emerald-600"></i> Daftar Anak Didik TK ABA XXI
+                    </h3>
+                    <span class="text-xs font-semibold bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full">37 Anak</span>
+                </div>
+                <div class="max-h-64 overflow-y-auto pr-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs" id="daftarSiswaList">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- List Guru -->
+            <div class="bg-white rounded-2xl p-6 border border-emerald-100 shadow-sm">
+                <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                    <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-user-tie text-emerald-600"></i> Tim Guru / Pembimbing
+                    </h3>
+                    <span class="text-xs font-semibold bg-teal-100 text-teal-700 px-2.5 py-1 rounded-full">5 Pengajar</span>
+                </div>
+                <div class="space-y-3" id="daftarGuruList">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Data Master Siswa
+        const daftarSiswa = [
+            "ABDULLAH ALFARISKY", "AFNAN ZABIR PUTRA RUNA", "AKSYA DAFA PERMANA",
+            "ANNASYA ADREENA SAILA", "ANNINDITA KEISHA ALMAHYRA", "ARYA DWI SAPUTRA",
+            "ASLAN NURDIANSYAH ANANDHI", "AYYUB AL HATIM", "AZIZTA NAHLA KHOIRUNNISA",
+            "CHAYRA ADZRA RASHAFAH", "CLARISTA PUTRI FITRIANI", "DANNIZA ALBIGHANI TRIESTIAN",
+            "DHEFINDRA ALFARIZQI SUBAGIYO", "FRIAN APRILIO JATI SUSANTO", "HASBI ALFARIZKI",
+            "KEISHA PUTRI ALMAYRA", "MUHAMMAD HAIDAR", "NADIA AZZAHRA ALFATHUNNISA",
+            "NADYA ALIYANA SHAIMA", "NIRMALA SALSABILA", "PRAVIS IZYAN DIRANDRA",
+            "PUTRI ANJELA ASYURA", "QUINSHA APRILLIA RAHMADHANI", "RAFID ZHAFAR PRASTIYO",
+            "RAFKA FIAN SWASTIKA", "RAHVANA JAGAD RINESTU", "RAIHANAH",
+            "RANIA ALISHA HARDIANTI", "RASYA ATHAYA ALFARIZI", "SAMADYA SHADA SULTHANAH",
+            "VINA DWI SAPUTRI", "VISHAKA NADHIFA PRAMUDANA", "ZELINE SHAQUILLA AQUEENSYA",
+            "ARGA ALVINO PRATAMA", "PUTRA SETIA WICAKSONO", "ALSAKI NUR ARSYANENDRA ARDINNATA",
+            "FAHMI ABDAD NUDIANSYAH"
+        ];
+
+        // Data Master Guru
+        const daftarGuru = [
+            "ARWANTO HADI SAPUTRO, S.Pd.",
+            "ISTI PURWANINGSIH, S.Pd.",
+            "YULIA INDAH HERAWATI, S.Pd.AUD.",
+            "TRI KUSUMARANI, S.Pd.",
+            "LINA ERNAWATI, A.Md."
+        ];
+
+        // Data State (In-Memory)
+        let dataSetoran = [
+            {
+                id: 1,
+                nama: "ABDULLAH ALFARISKY",
+                tanggal: "2026-08-17",
+                jilid: "Jilid 2",
+                halaman: "14",
+                guru: "ARWANTO HADI SAPUTRO, S.Pd.",
+                keterangan: "Lancar/Lulus"
+            },
+            {
+                id: 2,
+                nama: "ANNASYA ADREENA SAILA",
+                tanggal: "2026-08-17",
+                jilid: "Jilid 1",
+                halaman: "8",
+                guru: "ISTI PURWANINGSIH, S.Pd.",
+                keterangan: "Mengulang"
+            }
+        ];
+
+        function formatTanggalIndo(dateStr) {
+            if (!dateStr) return "-";
+            const options = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' };
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('id-ID', options);
+        }
+
+        function initDropdowns() {
+            const selectSiswa = document.getElementById('namaAnak');
+            daftarSiswa.sort().forEach(nama => {
+                const opt = document.createElement('option');
+                opt.value = nama;
+                opt.textContent = nama;
+                selectSiswa.appendChild(opt);
+            });
+
+            const selectGuru = document.getElementById('guru');
+            daftarGuru.forEach(guru => {
+                const opt = document.createElement('option');
+                opt.value = guru;
+                opt.textContent = guru;
+                selectGuru.appendChild(opt);
+            });
+
+            document.getElementById('tanggal').value = new Date().toISOString().split('T')[0];
+        }
+
+        function renderMasterLists() {
+            const listSiswaContainer = document.getElementById('daftarSiswaList');
+            listSiswaContainer.innerHTML = '';
+            daftarSiswa.sort().forEach((nama, idx) => {
+                const item = document.createElement('div');
+                item.className = 'flex items-center gap-2 p-2 rounded-lg bg-slate-50 border border-slate-100';
+                item.innerHTML = `<span class="w-5 h-5 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center font-bold text-[10px]">${idx + 1}</span>
+                                  <span class="font-medium text-slate-700 truncate">${nama}</span>`;
+                listSiswaContainer.appendChild(item);
+            });
+
+            const listGuruContainer = document.getElementById('daftarGuruList');
+            listGuruContainer.innerHTML = '';
+            daftarGuru.forEach((guru) => {
+                const item = document.createElement('div');
+                item.className = 'flex items-center gap-3 p-3 rounded-xl bg-emerald-50/50 border border-emerald-100';
+                item.innerHTML = `<div class="w-8 h-8 bg-emerald-600 text-white rounded-lg flex items-center justify-center font-bold text-xs"><i class="fa-solid fa-user-tie"></i></div>
+                                  <div>
+                                      <p class="text-xs font-bold text-slate-800">${guru}</p>
+                                      <p class="text-[11px] text-emerald-600 font-medium">Pengajar / Pembimbing Iqro</p>
+                                  </div>`;
+                listGuruContainer.appendChild(item);
+            });
+        }
+
+        function renderTable(filterText = '') {
+            const tbody = document.getElementById('rekapTableBody');
+            const emptyState = document.getElementById('emptyState');
+            tbody.innerHTML = '';
+
+            const filteredData = dataSetoran.filter(item => 
+                item.nama.toLowerCase().includes(filterText.toLowerCase())
+            );
+
+            if (filteredData.length === 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                
+                filteredData.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-slate-50/80 transition';
+
+                    const isLancar = item.keterangan === "Lancar/Lulus";
+                    const badgeClass = isLancar 
+                        ? 'bg-emerald-100 text-emerald-800 border-emerald-200' 
+                        : 'bg-amber-100 text-amber-800 border-amber-200';
+                    const iconClass = isLancar ? 'fa-circle-check text-emerald-600' : 'fa-rotate-right text-amber-600';
+
+                    tr.innerHTML = `
+                        <td class="px-4 py-3.5 text-xs text-slate-500 whitespace-nowrap">
+                            <i class="fa-regular fa-calendar text-slate-400 mr-1"></i> ${formatTanggalIndo(item.tanggal)}
+                        </td>
+                        <td class="px-4 py-3.5 font-bold text-slate-800">${item.nama}</td>
+                        <td class="px-4 py-3.5 whitespace-nowrap">
+                            <span class="inline-flex items-center gap-1 font-semibold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-md text-xs">
+                                ${item.jilid} • Hal. ${item.halaman}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3.5 text-xs text-slate-600">${item.guru}</td>
+                        <td class="px-4 py-3.5 text-center whitespace-nowrap">
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border ${badgeClass}">
+                                <i class="fa-solid ${iconClass} text-[10px]"></i> ${item.keterangan}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3.5 text-center whitespace-nowrap">
+                            <button onclick="deleteRecord(${item.id})" class="text-slate-400 hover:text-rose-600 transition p-1" title="Hapus Catatan">
+                                <i class="fa-regular fa-trash-can"></i>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            updateStats();
+        }
+
+        function updateStats() {
+            const todayStr = new Date().toISOString().split('T')[0];
+            document.getElementById('statTotalSetoran').textContent = dataSetoran.length;
+            document.getElementById('statLancar').textContent = dataSetoran.filter(d => d.keterangan === 'Lancar/Lulus').length;
+            document.getElementById('statMengulang').textContent = dataSetoran.filter(d => d.keterangan === 'Mengulang').length;
+            document.getElementById('statHariIni').textContent = dataSetoran.filter(d => d.tanggal === todayStr).length;
+        }
+
+        function deleteRecord(id) {
+            if (confirm('Apakah Anda yakin ingin menghapus catatan setoran ini?')) {
+                dataSetoran = dataSetoran.filter(item => item.id !== id);
+                renderTable(document.getElementById('searchInput').value);
+            }
+        }
+
+        document.getElementById('iqroForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const newItem = {
+                id: Date.now(),
+                nama: document.getElementById('namaAnak').value,
+                tanggal: document.getElementById('tanggal').value,
+                jilid: document.getElementById('jilid').value,
+                halaman: document.getElementById('halaman').value,
+                guru: document.getElementById('guru').value,
+                keterangan: document.querySelector('input[name="keterangan"]:checked').value
+            };
+
+            dataSetoran.unshift(newItem);
+            renderTable(document.getElementById('searchInput').value);
+
+            document.getElementById('namaAnak').value = '';
+            document.getElementById('halaman').value = '';
         });
-    });
-  </script>
 
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            renderTable(e.target.value);
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initDropdowns();
+            renderMasterLists();
+            renderTable();
+        });
+    </script>
 </body>
 </html>
