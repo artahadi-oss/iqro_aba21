@@ -37,11 +37,11 @@
                 <div class="flex gap-2">
                     <div class="bg-white/10 backdrop-blur border border-white/20 rounded-xl px-4 py-2 text-center">
                         <span class="block text-xs text-emerald-200">Total Murid</span>
-                        <span class="text-lg font-bold" id="headerTotalMurid">0</span>
+                        <span class="text-lg font-bold">37</span>
                     </div>
                     <div class="bg-white/10 backdrop-blur border border-white/20 rounded-xl px-4 py-2 text-center">
                         <span class="block text-xs text-emerald-200">Total Guru</span>
-                        <span class="text-lg font-bold" id="headerTotalGuru">0</span>
+                        <span class="text-lg font-bold">5</span>
                     </div>
                 </div>
             </div>
@@ -277,455 +277,640 @@
     </div>
 
     <!-- JavaScript Application Logic -->
-    
-<script>
-    // ============================================================
-    // DATA GEMBIRA - KONEKSI GOOGLE SHEETS
-    // Spreadsheet ID: 1T6afEJGxQ3QXcd9iQzZpqQQgjRrlLqXKBOGmjrbzm9Q
-    // ============================================================
+    <script>
+/* ============================================================
+   DATA GEMBIRA - KONEKSI GOOGLE SPREADSHEET
+   ============================================================ */
 
-    // GANTI dengan URL Web App Apps Script setelah deployment.
-    const API_URL = "https://script.google.com/macros/s/AKfycbzTeabRNXCXUbBG6SYBDZHl_JjmFUlirpTkdHOX2PGZSGrThETXXbpMnqdjeFaa_Q/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxVBlblj12zAuDlAxaHAfuqrDi77H2DNBce2oNlo4qbakZ6_4WyJog0yAphjEpMb0gc/exec";
+const API_TOKEN = "";
 
-    // Token opsional untuk keamanan. Harus sama dengan API_TOKEN di Code.gs.
-    // Jika Code.gs API_TOKEN dikosongkan, isi juga boleh dikosongkan.
-    const API_TOKEN = "";
+let daftarSiswa = [];
+let daftarGuru = [];
+let dataSetoran = [];
 
-    let daftarSiswa = [];
-    let daftarGuru = [];
-    let dataSetoran = [];
 
-    function apiGet(params = {}) {
-        return new Promise((resolve, reject) => {
-            if (!API_URL || API_URL.includes("PASTE_URL")) {
-                reject(new Error("URL Web App Apps Script belum diisi."));
-                return;
+/* ==================== API ==================== */
+
+function apiGet(params = {}) {
+    return new Promise((resolve, reject) => {
+        const callbackName =
+            "gembiraCallback_" +
+            Date.now() +
+            "_" +
+            Math.random().toString(36).slice(2);
+
+        const query = new URLSearchParams({
+            ...params,
+            callback: callbackName
+        });
+
+        if (API_TOKEN) query.set("token", API_TOKEN);
+
+        const script = document.createElement("script");
+        let finished = false;
+
+        const cleanup = () => {
+            if (finished) return;
+            finished = true;
+            clearTimeout(timeout);
+            delete window[callbackName];
+            script.remove();
+        };
+
+        const timeout = setTimeout(() => {
+            cleanup();
+            reject(new Error(
+                "Server tidak merespons. Periksa Web App Apps Script."
+            ));
+        }, 20000);
+
+        window[callbackName] = (result) => {
+            cleanup();
+
+            if (result && result.success === false) {
+                reject(new Error(result.message || "Terjadi kesalahan."));
+            } else {
+                resolve(result);
             }
+        };
 
-            const callbackName = "gembiraCallback_" + Date.now() + "_" +
-                Math.random().toString(36).slice(2);
+        script.onerror = () => {
+            cleanup();
+            reject(new Error(
+                "Gagal menghubungi Google Apps Script."
+            ));
+        };
 
-            const query = new URLSearchParams({
-                ...params,
-                callback: callbackName
-            });
+        script.src =
+            API_URL +
+            (API_URL.includes("?") ? "&" : "?") +
+            query.toString();
 
-            if (API_TOKEN) query.set("token", API_TOKEN);
+        document.body.appendChild(script);
+    });
+}
 
-            const script = document.createElement("script");
-            const timeout = setTimeout(() => {
-                cleanup();
-                reject(new Error("Server tidak merespons. Periksa URL Web App Apps Script."));
-            }, 20000);
 
-            function cleanup() {
-                clearTimeout(timeout);
-                delete window[callbackName];
-                script.remove();
-            }
+/* ==================== UTILITAS ==================== */
 
-            window[callbackName] = (result) => {
-                cleanup();
-                if (result && result.success === false) {
-                    reject(new Error(result.message || "Terjadi kesalahan pada server."));
-                } else {
-                    resolve(result);
-                }
-            };
+function escapeHtml(value) {
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
 
-            script.onerror = () => {
-                cleanup();
-                reject(new Error("Gagal menghubungi Google Apps Script."));
-            };
+function getTodayLocal() {
+    const now = new Date();
 
-            script.src = API_URL + (API_URL.includes("?") ? "&" : "?") + query.toString();
-            document.body.appendChild(script);
-        });
-    }
+    return (
+        now.getFullYear() +
+        "-" +
+        String(now.getMonth() + 1).padStart(2, "0") +
+        "-" +
+        String(now.getDate()).padStart(2, "0")
+    );
+}
 
-    function escapeHtml(value) {
-        return String(value ?? "")
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-    }
+function formatTanggalIndo(value) {
+    if (!value) return "-";
 
-    function formatTanggalIndo(dateStr) {
-        if (!dateStr) return "-";
+    const parts = String(value).slice(0, 10).split("-");
 
-        // Menghindari pergeseran tanggal akibat timezone.
-        const parts = String(dateStr).split("-");
-        if (parts.length !== 3) return dateStr;
+    if (parts.length !== 3) return value;
 
-        const date = new Date(
-            Number(parts[0]),
-            Number(parts[1]) - 1,
-            Number(parts[2])
-        );
+    const date = new Date(
+        Number(parts[0]),
+        Number(parts[1]) - 1,
+        Number(parts[2])
+    );
 
-        return date.toLocaleDateString("id-ID", {
-            weekday: "long",
-            year: "numeric",
-            month: "short",
-            day: "numeric"
-        });
-    }
+    return date.toLocaleDateString("id-ID", {
+        weekday: "long",
+        year: "numeric",
+        month: "short",
+        day: "numeric"
+    });
+}
 
-    function getTodayLocal() {
-        const now = new Date();
-        const y = now.getFullYear();
-        const m = String(now.getMonth() + 1).padStart(2, "0");
-        const d = String(now.getDate()).padStart(2, "0");
-        return `${y}-${m}-${d}`;
-    }
 
-    function initDropdowns() {
-        const selectSiswa = document.getElementById("namaAnak");
-        const selectGuru = document.getElementById("guru");
+/* ==================== DROPDOWN ==================== */
 
-        selectSiswa.innerHTML =
-            '<option value="" disabled selected>-- Pilih Nama Anak --</option>';
+function initDropdowns() {
+    const selectSiswa = document.getElementById("namaAnak");
+    const selectGuru = document.getElementById("guru");
 
-        [...daftarSiswa].sort((a, b) => a.localeCompare(b, "id")).forEach(nama => {
-            const opt = document.createElement("option");
-            opt.value = nama;
-            opt.textContent = nama;
-            selectSiswa.appendChild(opt);
+    selectSiswa.innerHTML =
+        '<option value="" disabled selected>-- Pilih Nama Anak --</option>';
+
+    [...daftarSiswa]
+        .sort((a, b) => a.localeCompare(b, "id"))
+        .forEach(nama => {
+            const option = document.createElement("option");
+            option.value = nama;
+            option.textContent = nama;
+            selectSiswa.appendChild(option);
         });
 
-        selectGuru.innerHTML =
-            '<option value="" disabled selected>-- Pilih Guru --</option>';
+    selectGuru.innerHTML =
+        '<option value="" disabled selected>-- Pilih Guru --</option>';
 
-        daftarGuru.forEach(guru => {
-            const opt = document.createElement("option");
-            opt.value = guru;
-            opt.textContent = guru;
-            selectGuru.appendChild(opt);
-        });
+    daftarGuru.forEach(guru => {
+        const option = document.createElement("option");
+        option.value = guru;
+        option.textContent = guru;
+        selectGuru.appendChild(option);
+    });
 
-        document.getElementById("tanggal").value = getTodayLocal();
-    }
+    document.getElementById("tanggal").value = getTodayLocal();
+}
 
-    function renderMasterLists() {
-        const headerTotalMurid = document.getElementById("headerTotalMurid");
-        const headerTotalGuru = document.getElementById("headerTotalGuru");
-        if (headerTotalMurid) headerTotalMurid.textContent = daftarSiswa.length;
-        if (headerTotalGuru) headerTotalGuru.textContent = daftarGuru.length;
-        const listSiswaContainer = document.getElementById("daftarSiswaList");
-        listSiswaContainer.innerHTML = "";
 
-        [...daftarSiswa].sort((a, b) => a.localeCompare(b, "id")).forEach((nama, idx) => {
+/* ==================== MASTER ==================== */
+
+function renderMasterLists() {
+    const siswaContainer =
+        document.getElementById("daftarSiswaList");
+
+    const guruContainer =
+        document.getElementById("daftarGuruList");
+
+    siswaContainer.innerHTML = "";
+
+    [...daftarSiswa]
+        .sort((a, b) => a.localeCompare(b, "id"))
+        .forEach((nama, index) => {
+
             const item = document.createElement("div");
+
             item.className =
                 "flex items-center gap-2 p-2 rounded-lg bg-slate-50 border border-slate-100";
 
             item.innerHTML = `
-                <span class="w-5 h-5 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center font-bold text-[10px]">
-                    ${idx + 1}
+                <span class="w-5 h-5 bg-emerald-100 text-emerald-700
+                    rounded-full flex items-center justify-center
+                    font-bold text-[10px]">
+                    ${index + 1}
                 </span>
-                <span class="font-medium text-slate-700 truncate">${escapeHtml(nama)}</span>
+
+                <span class="font-medium text-slate-700 truncate">
+                    ${escapeHtml(nama)}
+                </span>
             `;
 
-            listSiswaContainer.appendChild(item);
+            siswaContainer.appendChild(item);
         });
 
-        const badgeSiswa = document.querySelector(
-            "#daftarSiswaList"
-        )?.closest(".bg-white")?.querySelector(".rounded-full");
 
-        if (badgeSiswa) {
-            badgeSiswa.textContent = `${daftarSiswa.length} Anak`;
-        }
+    guruContainer.innerHTML = "";
 
-        const listGuruContainer = document.getElementById("daftarGuruList");
-        listGuruContainer.innerHTML = "";
+    daftarGuru.forEach(guru => {
 
-        daftarGuru.forEach(guru => {
-            const item = document.createElement("div");
-            item.className =
-                "flex items-center gap-3 p-3 rounded-xl bg-emerald-50/50 border border-emerald-100";
+        const item = document.createElement("div");
 
-            item.innerHTML = `
-                <div class="w-8 h-8 bg-emerald-600 text-white rounded-lg flex items-center justify-center font-bold text-xs">
-                    <i class="fa-solid fa-user-tie"></i>
-                </div>
-                <div>
-                    <p class="text-xs font-bold text-slate-800">${escapeHtml(guru)}</p>
-                    <p class="text-[11px] text-emerald-600 font-medium">
-                        Pengajar / Pembimbing Iqro
-                    </p>
-                </div>
-            `;
+        item.className =
+            "flex items-center gap-3 p-3 rounded-xl bg-emerald-50/50 border border-emerald-100";
 
-            listGuruContainer.appendChild(item);
-        });
+        item.innerHTML = `
+            <div class="w-8 h-8 bg-emerald-600 text-white
+                rounded-lg flex items-center justify-center font-bold text-xs">
+                <i class="fa-solid fa-user-tie"></i>
+            </div>
 
-        const badgeGuru = document.querySelector(
-            "#daftarGuruList"
-        )?.closest(".bg-white")?.querySelector(".rounded-full");
+            <div>
+                <p class="text-xs font-bold text-slate-800">
+                    ${escapeHtml(guru)}
+                </p>
 
-        if (badgeGuru) {
-            badgeGuru.textContent = `${daftarGuru.length} Pengajar`;
-        }
-    }
+                <p class="text-[11px] text-emerald-600 font-medium">
+                    Pengajar / Pembimbing Iqro
+                </p>
+            </div>
+        `;
 
-    function renderTable(filterText = "") {
-        const tbody = document.getElementById("rekapTableBody");
-        const emptyState = document.getElementById("emptyState");
+        guruContainer.appendChild(item);
+    });
+}
 
-        tbody.innerHTML = "";
 
-        const keyword = filterText.trim().toLowerCase();
+/* ==================== TABEL ==================== */
 
-        const filteredData = dataSetoran.filter(item =>
-            String(item.nama || "").toLowerCase().includes(keyword)
+function renderTable(filterText = "") {
+
+    const tbody =
+        document.getElementById("rekapTableBody");
+
+    const emptyState =
+        document.getElementById("emptyState");
+
+    tbody.innerHTML = "";
+
+    const keyword =
+        filterText.trim().toLowerCase();
+
+    const filtered =
+        dataSetoran.filter(item =>
+            String(item.nama || "")
+                .toLowerCase()
+                .includes(keyword)
         );
 
-        if (filteredData.length === 0) {
-            emptyState.classList.remove("hidden");
-        } else {
-            emptyState.classList.add("hidden");
 
-            filteredData.forEach(item => {
-                const tr = document.createElement("tr");
-                tr.className = "hover:bg-slate-50/80 transition";
+    if (filtered.length === 0) {
 
-                const isLancar = item.keterangan === "Lancar/Lulus";
-                const badgeClass = isLancar
+        emptyState.classList.remove("hidden");
+
+    } else {
+
+        emptyState.classList.add("hidden");
+
+        filtered.forEach(item => {
+
+            const tr = document.createElement("tr");
+
+            tr.className =
+                "hover:bg-slate-50/80 transition";
+
+            const lancar =
+                item.keterangan === "Lancar/Lulus";
+
+            const badge =
+                lancar
                     ? "bg-emerald-100 text-emerald-800 border-emerald-200"
                     : "bg-amber-100 text-amber-800 border-amber-200";
 
-                const iconClass = isLancar
+            const icon =
+                lancar
                     ? "fa-circle-check text-emerald-600"
                     : "fa-rotate-right text-amber-600";
 
-                tr.innerHTML = `
-                    <td class="px-4 py-3.5 text-xs text-slate-500 whitespace-nowrap">
-                        <i class="fa-regular fa-calendar text-slate-400 mr-1"></i>
-                        ${escapeHtml(formatTanggalIndo(item.tanggal))}
-                    </td>
+            tr.innerHTML = `
+                <td class="px-4 py-3.5 text-xs text-slate-500 whitespace-nowrap">
+                    <i class="fa-regular fa-calendar text-slate-400 mr-1"></i>
+                    ${escapeHtml(formatTanggalIndo(item.tanggal))}
+                </td>
 
-                    <td class="px-4 py-3.5 font-bold text-slate-800">
-                        ${escapeHtml(item.nama)}
-                    </td>
+                <td class="px-4 py-3.5 font-bold text-slate-800">
+                    ${escapeHtml(item.nama)}
+                </td>
 
-                    <td class="px-4 py-3.5 whitespace-nowrap">
-                        <span class="inline-flex items-center gap-1 font-semibold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-md text-xs">
-                            ${escapeHtml(item.jilid)} • Hal. ${escapeHtml(item.halaman)}
-                        </span>
-                    </td>
+                <td class="px-4 py-3.5 whitespace-nowrap">
+                    <span class="inline-flex items-center gap-1 font-semibold
+                        text-slate-700 bg-slate-100 px-2.5 py-1 rounded-md text-xs">
+                        ${escapeHtml(item.jilid)} • Hal. ${escapeHtml(item.halaman)}
+                    </span>
+                </td>
 
-                    <td class="px-4 py-3.5 text-xs text-slate-600">
-                        ${escapeHtml(item.guru)}
-                    </td>
+                <td class="px-4 py-3.5 text-xs text-slate-600">
+                    ${escapeHtml(item.guru)}
+                </td>
 
-                    <td class="px-4 py-3.5 text-center whitespace-nowrap">
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border ${badgeClass}">
-                            <i class="fa-solid ${iconClass} text-[10px]"></i>
-                            ${escapeHtml(item.keterangan)}
-                        </span>
-                    </td>
+                <td class="px-4 py-3.5 text-center whitespace-nowrap">
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1
+                        rounded-full text-xs font-semibold border ${badge}">
+                        <i class="fa-solid ${icon} text-[10px]"></i>
+                        ${escapeHtml(item.keterangan)}
+                    </span>
+                </td>
 
-                    <td class="px-4 py-3.5 text-center whitespace-nowrap">
-                        <button
-                            onclick="deleteRecord('${encodeURIComponent(String(item.id))}')"
-                            class="text-slate-400 hover:text-rose-600 transition p-1"
-                            title="Hapus Catatan">
-                            <i class="fa-regular fa-trash-can"></i>
-                        </button>
-                    </td>
-                `;
-
-                tbody.appendChild(tr);
-            });
-        }
-
-        updateStats();
-    }
-
-    function updateStats() {
-        const todayStr = getTodayLocal();
-
-        document.getElementById("statTotalSetoran").textContent =
-            dataSetoran.length;
-
-        document.getElementById("statLancar").textContent =
-            dataSetoran.filter(d => d.keterangan === "Lancar/Lulus").length;
-
-        document.getElementById("statMengulang").textContent =
-            dataSetoran.filter(d => d.keterangan === "Mengulang").length;
-
-        document.getElementById("statHariIni").textContent =
-            dataSetoran.filter(d => String(d.tanggal).slice(0, 10) === todayStr).length;
-    }
-
-    function setLoading(isLoading, message = "") {
-        const button = document.querySelector('#iqroForm button[type="submit"]');
-
-        if (!button) return;
-
-        if (isLoading) {
-            button.disabled = true;
-            button.classList.add("opacity-70", "cursor-not-allowed");
-            button.innerHTML =
-                '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
-        } else {
-            button.disabled = false;
-            button.classList.remove("opacity-70", "cursor-not-allowed");
-            button.innerHTML =
-                '<i class="fa-solid fa-plus"></i> Simpan Catatan';
-        }
-
-        if (message) {
-            console.log(message);
-        }
-    }
-
-    async function loadAllData() {
-        try {
-            const result = await apiGet({ action: "getAll" });
-
-            daftarSiswa = Array.isArray(result.siswa) ? result.siswa : [];
-            daftarGuru = Array.isArray(result.guru) ? result.guru : [];
-            dataSetoran = Array.isArray(result.setoran) ? result.setoran : [];
-
-            initDropdowns();
-            renderMasterLists();
-            renderTable();
-
-        } catch (error) {
-            console.error(error);
-
-            document.getElementById("rekapTableBody").innerHTML = `
-                <tr>
-                    <td colspan="6" class="px-4 py-8 text-center">
-                        <div class="text-rose-600 font-semibold mb-1">
-                            Gagal memuat data
-                        </div>
-                        <div class="text-xs text-slate-500">
-                            ${escapeHtml(error.message)}
-                        </div>
-                    </td>
-                </tr>
+                <td class="px-4 py-3.5 text-center whitespace-nowrap">
+                    <button
+                        onclick="deleteRecord('${encodeURIComponent(String(item.id))}')"
+                        class="text-slate-400 hover:text-rose-600 transition p-1"
+                        title="Hapus Catatan">
+                        <i class="fa-regular fa-trash-can"></i>
+                    </button>
+                </td>
             `;
 
-            alert(
-                "Gagal terhubung ke Google Spreadsheet.
-
-" +
-                error.message +
-                "
-
-Pastikan URL Web App Apps Script sudah dimasukkan ke API_URL."
-            );
-        }
+            tbody.appendChild(tr);
+        });
     }
 
-    async function deleteRecord(encodedId) {
-        const id = decodeURIComponent(encodedId);
+    updateStats();
+}
 
-        if (!confirm("Apakah Anda yakin ingin menghapus catatan setoran ini?")) {
-            return;
-        }
 
-        try {
-            const result = await apiGet({
-                action: "delete",
-                id: id
+/* ==================== STATISTIK ==================== */
+
+function updateStats() {
+
+    const today = getTodayLocal();
+
+    const total =
+        document.getElementById("statTotalSetoran");
+
+    const lancar =
+        document.getElementById("statLancar");
+
+    const mengulang =
+        document.getElementById("statMengulang");
+
+    const hariIni =
+        document.getElementById("statHariIni");
+
+
+    if (total)
+        total.textContent = dataSetoran.length;
+
+    if (lancar)
+        lancar.textContent =
+            dataSetoran.filter(
+                x => x.keterangan === "Lancar/Lulus"
+            ).length;
+
+    if (mengulang)
+        mengulang.textContent =
+            dataSetoran.filter(
+                x => x.keterangan === "Mengulang"
+            ).length;
+
+    if (hariIni)
+        hariIni.textContent =
+            dataSetoran.filter(
+                x => String(x.tanggal).slice(0, 10) === today
+            ).length;
+}
+
+
+/* ==================== LOAD DATA ==================== */
+
+async function loadAllData() {
+
+    try {
+
+        const result =
+            await apiGet({
+                action: "getAll"
             });
 
-            if (!result || result.success !== true) {
-                throw new Error(result?.message || "Data gagal dihapus.");
-            }
 
-            await loadAllData();
+        daftarSiswa =
+            Array.isArray(result.siswa)
+                ? result.siswa
+                : [];
 
-        } catch (error) {
-            console.error(error);
-            alert("Gagal menghapus data.
+        daftarGuru =
+            Array.isArray(result.guru)
+                ? result.guru
+                : [];
 
-" + error.message);
-        }
+        dataSetoran =
+            Array.isArray(result.setoran)
+                ? result.setoran
+                : [];
+
+
+        initDropdowns();
+
+        renderMasterLists();
+
+        renderTable();
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Data murid dan guru gagal dimuat dari Spreadsheet.\n\n" +
+            error.message
+        );
     }
+}
 
-    document.getElementById("iqroForm").addEventListener("submit", async function(e) {
+
+/* ==================== SIMPAN ==================== */
+
+document.getElementById("iqroForm")
+    .addEventListener("submit", async function(e) {
+
         e.preventDefault();
 
-        const newItem = {
-            nama: document.getElementById("namaAnak").value,
-            tanggal: document.getElementById("tanggal").value,
-            jilid: document.getElementById("jilid").value,
-            halaman: document.getElementById("halaman").value,
-            guru: document.getElementById("guru").value,
-            keterangan:
-                document.querySelector('input[name="keterangan"]:checked').value
-        };
+
+        const nama =
+            document.getElementById("namaAnak").value;
+
+        const tanggal =
+            document.getElementById("tanggal").value;
+
+        const jilid =
+            document.getElementById("jilid").value;
+
+        const halaman =
+            document.getElementById("halaman").value;
+
+        const guru =
+            document.getElementById("guru").value;
+
+        const keteranganElement =
+            document.querySelector(
+                'input[name="keterangan"]:checked'
+            );
+
+
+        const keterangan =
+            keteranganElement
+                ? keteranganElement.value
+                : "";
+
 
         if (
-            !newItem.nama ||
-            !newItem.tanggal ||
-            !newItem.jilid ||
-            !newItem.halaman ||
-            !newItem.guru ||
-            !newItem.keterangan
+            !nama ||
+            !tanggal ||
+            !jilid ||
+            !halaman ||
+            !guru ||
+            !keterangan
         ) {
-            alert("Mohon lengkapi semua data yang wajib diisi.");
+
+            alert(
+                "Mohon lengkapi semua data."
+            );
+
             return;
         }
 
+
         try {
-            setLoading(true);
 
-            const result = await apiGet({
-                action: "save",
-                nama: newItem.nama,
-                tanggal: newItem.tanggal,
-                jilid: newItem.jilid,
-                halaman: newItem.halaman,
-                guru: newItem.guru,
-                keterangan: newItem.keterangan
-            });
+            const button =
+                document.querySelector(
+                    '#iqroForm button[type="submit"]'
+                );
 
-            if (!result || result.success !== true) {
-                throw new Error(result?.message || "Data gagal disimpan.");
+            if (button) {
+                button.disabled = true;
+                button.innerHTML =
+                    '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
             }
 
-            alert("Catatan setoran berhasil disimpan.");
 
-            document.getElementById("namaAnak").value = "";
-            document.getElementById("jilid").value = "";
-            document.getElementById("halaman").value = "";
-            document.getElementById("guru").value = "";
-            document.getElementById("tanggal").value = getTodayLocal();
+            const result =
+                await apiGet({
+
+                    action: "save",
+
+                    nama: nama,
+
+                    tanggal: tanggal,
+
+                    jilid: jilid,
+
+                    halaman: halaman,
+
+                    guru: guru,
+
+                    keterangan: keterangan
+
+                });
+
+
+            if (!result.success) {
+
+                throw new Error(
+                    result.message ||
+                    "Data gagal disimpan."
+                );
+
+            }
+
+
+            alert(
+                "Catatan setoran berhasil disimpan."
+            );
+
+
+            document.getElementById(
+                "namaAnak"
+            ).value = "";
+
+            document.getElementById(
+                "jilid"
+            ).value = "";
+
+            document.getElementById(
+                "halaman"
+            ).value = "";
+
+            document.getElementById(
+                "guru"
+            ).value = "";
+
 
             await loadAllData();
 
+
         } catch (error) {
-            console.error(error);
-            alert("Gagal menyimpan data.
 
-" + error.message);
+            alert(
+                "Gagal menyimpan data:\n\n" +
+                error.message
+            );
+
         } finally {
-            setLoading(false);
+
+            const button =
+                document.querySelector(
+                    '#iqroForm button[type="submit"]'
+                );
+
+            if (button) {
+
+                button.disabled = false;
+
+                button.innerHTML =
+                    '<i class="fa-solid fa-plus"></i> Simpan Catatan';
+
+            }
         }
+
     });
 
-    document.getElementById("searchInput").addEventListener("input", function(e) {
+
+/* ==================== HAPUS ==================== */
+
+async function deleteRecord(encodedId) {
+
+    const id =
+        decodeURIComponent(encodedId);
+
+
+    if (
+        !confirm(
+            "Apakah Anda yakin ingin menghapus catatan setoran ini?"
+        )
+    ) {
+        return;
+    }
+
+
+    try {
+
+        const result =
+            await apiGet({
+
+                action: "delete",
+
+                id: id
+
+            });
+
+
+        if (!result.success) {
+
+            throw new Error(
+                result.message ||
+                "Data gagal dihapus."
+            );
+
+        }
+
+
+        await loadAllData();
+
+
+    } catch (error) {
+
+        alert(
+            "Gagal menghapus data:\n\n" +
+            error.message
+        );
+
+    }
+}
+
+
+/* ==================== SEARCH ==================== */
+
+document.getElementById(
+    "searchInput"
+).addEventListener(
+    "input",
+    function(e) {
         renderTable(e.target.value);
-    });
+    }
+);
 
-    window.addEventListener("DOMContentLoaded", () => {
-        if (!API_URL || API_URL.includes("PASTE_URL")) {
-            document.getElementById("tanggal").value = getTodayLocal();
-            console.warn("API_URL belum dikonfigurasi.");
-            return;
-        }
+
+/* ==================== START ==================== */
+
+window.addEventListener(
+    "DOMContentLoaded",
+    function() {
+
+        document.getElementById(
+            "tanggal"
+        ).value = getTodayLocal();
 
         loadAllData();
-    });
-</script>
 
+    }
+);
+
+</script>
 </body>
 </html>
